@@ -1,5 +1,13 @@
-# TogaII 4.01
+# TogaIII 0.1
 
-taken from http://www.talkchess.com/forum3/viewtopic.php?t=66174
+Initial port of NNUE with the Toga 3 0.4 net.
 
-linked to http://www.mediafire.com/file/xeukohvobjobbv4/TogaII401.zip
+```
+cd src
+make
+```
+
+That should produce a toga3 binary with embedded 0.4 net.
+
+Lots of improvements and fixes to be made.
+
