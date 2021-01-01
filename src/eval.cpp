@@ -20,6 +20,8 @@
 #include "vector.h"
 //#include "probe.h"
 #include "search.h"
+#include "nnue_eval.h"
+#include <stdio.h>
 
 // macros
 
@@ -353,6 +355,71 @@ void eval_init() {
    KingAttackUnit[BQ] = 4;
 }
 
+// eval_nnue()
+
+// Stockfish NNUE piece encoding
+int nnue_pieces[13] = {6, 12, 5, 11, 4, 10, 3, 9, 2, 8, 1, 7, 0};
+
+int eval_nnue(board_t * board) {
+  // NNUE probe arrays
+  int pieces[33];
+  int squares[33];
+
+  // NNUE probe arrays index
+  int index = 2;
+
+  // fill nnue probe arrays
+  int sq, piece, colour;
+  int size, pos;
+
+  int eval =0;
+  bool is_white;
+  
+  for (colour = 0; colour < ColourNb; colour++) {
+    is_white = COLOUR_IS_WHITE(colour);
+    
+    // piece list
+
+    size = board->piece_size[colour];
+    for (pos = 0; pos < size; pos++) {
+      sq = board->piece[colour][pos];
+      piece = PIECE_TO_12(board->square[sq]);
+      if (piece == WhiteKing12) {
+	pieces[0] = nnue_pieces[piece];
+	squares[0] = SQUARE_TO_64(sq);
+	//printf("*white king = %d => %d\n", piece, nnue_pieces[piece]);
+      } else if (piece == BlackKing12) {
+	pieces[1] = nnue_pieces[piece];
+	squares[1] = SQUARE_TO_64(sq);
+	//printf("*black king = %d => %d\n", piece, nnue_pieces[piece]);
+      } else {
+	pieces[index] = nnue_pieces[piece];
+	squares[index] = SQUARE_TO_64(sq);
+	index++;
+      }
+    }
+    // now deal with the pawns
+    size = board->pawn_size[colour];
+    for (pos = 0; pos < size; pos++) {
+      sq = board->pawn[colour][pos];
+      piece = PIECE_TO_12(board->square[sq]);
+      pieces[index] = nnue_pieces[piece];
+      squares[index] = SQUARE_TO_64(sq);
+      //      if (piece == BlackPawn12) {
+      //printf("*%s piece = %d => %d\n", "BP", piece, nnue_pieces[piece]);
+      //}
+      index++;
+    }
+  }
+  // end piece and square arrays with zero terminating characters
+  pieces[index] = 0;
+  squares[index] = 0;
+
+  int retval = evaluate_nnue(board->turn, pieces, squares);
+  return retval;
+  
+}
+
 // eval()
 
 int eval(board_t * board, int alpha, int beta, int ThreadId) {
@@ -430,6 +497,12 @@ int eval(board_t * board, int alpha, int beta, int ThreadId) {
 		return (lazy_eval);  
  
    } 
+
+
+   // nnue post lazy
+   if ((board->piece_size[White] + board->piece_size[Black]) > 6) {
+     return eval_nnue(board);
+   }
    
    // pawns (moved JD: very small gain)
 
