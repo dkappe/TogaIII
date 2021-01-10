@@ -32,7 +32,7 @@
 
 // constants
 
-#define VERSION "4.01"
+#define VERSION "0.2"
 
 static const double NormalRatio = 1.0;
 static const double PonderRatio = 1.25;
@@ -259,8 +259,8 @@ static void loop_step() {
       ASSERT(!Searching);
       ASSERT(!Delay);
 
-      send("id name Toga II " VERSION);
-      send("id author Jerry Donald Watson, Thomas Gaksch and Fabien Letouzey");
+      send("id name Toga III " VERSION);
+      send("id author Dietrich Kappe, Jerry Donald Watson, Thomas Gaksch and Fabien Letouzey");
 
       option_list();
 
